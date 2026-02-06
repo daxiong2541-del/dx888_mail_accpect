@@ -19,7 +19,7 @@ export async function GET(
     await dbConnect();
     const { id } = await params;
     if (!mongoose.isValidObjectId(id)) {
-      return new NextResponse('Invalid id', { status: 400 });
+      return new NextResponse('无效的 ID', { status: 400 });
     }
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'json'; // json or html
@@ -27,7 +27,7 @@ export async function GET(
     const config = await EmailConfig.findById(id);
 
     if (!config) {
-      return new NextResponse('Config not found', { status: 404 });
+      return new NextResponse('未找到配置', { status: 404 });
     }
 
     if (!config.shareType) {
@@ -36,12 +36,12 @@ export async function GET(
 
     // Check expiration
     if (new Date() > config.expiresAt) {
-      return new NextResponse('Link Expired (Time Limit)', { status: 410 });
+      return new NextResponse('链接已过期', { status: 410 });
     }
 
     // Check count limit
     if (config.receivedCount >= config.maxCount) {
-      return new NextResponse('Link Expired (Max Count Reached)', { status: 410 });
+      return new NextResponse('链接已过期', { status: 410 });
     }
 
     // Call external API
@@ -68,7 +68,7 @@ export async function GET(
           detail = err.message;
         }
 
-        console.error('Error fetching emails', { configId: String(config._id), detail });
+        console.error(`获取邮件时出错 configId=${String(config._id)} ${detail}`);
         return new NextResponse('Error fetching emails', { status: 502 });
     }
 
@@ -126,6 +126,6 @@ export async function GET(
     }
 
   } catch {
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return new NextResponse('内部服务器错误', { status: 500 });
   }
 }

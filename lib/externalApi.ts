@@ -13,8 +13,12 @@ try {
   // ignore
 }
 
-const httpAgent = new http.Agent({ keepAlive: true });
-const httpsAgent = new https.Agent({ keepAlive: true });
+const lookup = (hostname: string, options: unknown, cb: unknown) => {
+  return dns.lookup(hostname, { ...(options as Record<string, unknown>), family: 4 }, cb as never);
+};
+
+const httpAgent = new http.Agent({ keepAlive: true, lookup });
+const httpsAgent = new https.Agent({ keepAlive: true, lookup });
 
 async function getApi() {
   const settings = await getSystemSettings();
