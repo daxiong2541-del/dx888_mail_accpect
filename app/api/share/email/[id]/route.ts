@@ -58,10 +58,16 @@ export async function GET(
     } catch (err: unknown) {
         let detail = 'unknown';
         if (axios.isAxiosError(err)) {
+          const dataPreview = err.response?.data
+            ? typeof err.response.data === 'string'
+              ? err.response.data.slice(0, 200)
+              : JSON.stringify(err.response.data).slice(0, 200)
+            : '';
           detail = [
             err.code ? `code=${err.code}` : null,
             typeof err.response?.status === 'number' ? `status=${err.response.status}` : null,
             err.message ? `message=${err.message}` : null,
+            dataPreview ? `data=${dataPreview}` : null,
           ]
             .filter(Boolean)
             .join(' ');
