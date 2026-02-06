@@ -23,6 +23,7 @@ export async function GET(
     }
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'json'; // json or html
+    const debug = searchParams.get('debug') === '1';
 
     const config = await EmailConfig.findById(id);
 
@@ -69,7 +70,7 @@ export async function GET(
         }
 
         console.error(`获取邮件时出错 configId=${String(config._id)} ${detail}`);
-        return new NextResponse('Error fetching emails', { status: 502 });
+        return new NextResponse(debug ? `Error fetching emails\n${detail}` : 'Error fetching emails', { status: 502 });
     }
 
     const first = emails[0] as { toEmail?: string; content?: string; createTime?: string; subject?: string } | undefined;
