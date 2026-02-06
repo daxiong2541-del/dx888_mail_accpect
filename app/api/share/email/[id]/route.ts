@@ -124,10 +124,14 @@ export async function GET(
       });
     } else {
       const remainingChecks = config.maxCount - config.receivedCount;
+      const expiresAtIso = config.expiresAt ? new Date(config.expiresAt).toISOString() : null;
+      const remainingMs = config.expiresAt ? Math.max(0, new Date(config.expiresAt).getTime() - Date.now()) : null;
       return NextResponse.json({
         success: true,
         msg,
         remainingChecks,
+        expiresAt: expiresAtIso,
+        remainingMs,
         data: hasData ? [first] : []
       });
     }

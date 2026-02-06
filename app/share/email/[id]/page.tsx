@@ -10,6 +10,23 @@ type EmailItem = {
   subject?: string;
 };
 
+function formatRemaining(ms: number) {
+  const safe = Math.max(0, Math.floor(ms));
+  if (safe <= 0) return '已过期';
+  const totalSeconds = Math.floor(safe / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts: string[] = [];
+  if (days) parts.push(`${days}天`);
+  if (hours || days) parts.push(`${hours}小时`);
+  if (minutes || hours || days) parts.push(`${minutes}分钟`);
+  parts.push(`${seconds}秒`);
+  return parts.join(' ');
+}
+
 function stripScripts(html: string) {
   return String(html || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 }
@@ -26,6 +43,7 @@ export default function ShareEmailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [remainingChecks, setRemainingChecks] = useState<number>(0);
+  const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const [msg, setMsg] = useState<string>('');
   const [email, setEmail] = useState<EmailItem | null>(null);
 
@@ -40,11 +58,12 @@ export default function ShareEmailPage() {
     fetch(`/api/share/email/${id}`, { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) throw new Error(await res.text());
-        return res.json() as Promise<{ remainingChecks: number; msg?: string; data: EmailItem[] }>;
+        return res.json() as Promise<{ remainingChecks: number; remainingMs?: number | null; msg?: string; data: EmailItem[] }>;
       })
       .then((json) => {
         if (cancelled) return;
         setRemainingChecks(json.remainingChecks);
+        setRemainingMs(typeof json.remainingMs === 'number' ? json.remainingMs : null);
         setMsg(String(json.msg || ''));
         const list = Array.isArray(json.data) ? json.data : [];
         setEmail(list[0] || null);
@@ -93,6 +112,7 @@ export default function ShareEmailPage() {
       <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>邮件</div>
       <div style={{ color: '#333', marginBottom: 8 }}>{msg}</div>
       <div style={{ color: '#666', marginBottom: 16 }}>剩余次数：{remainingChecks}</div>
+      <div style={{ color: '#666', marginBottom: 16 }}>剩余时间：{remainingMs === null ? '-' : formatRemaining(remainingMs)}</div>
       {!email ? (
         <div>未收到邮件</div>
       ) : (
