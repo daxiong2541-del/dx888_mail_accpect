@@ -24,6 +24,7 @@ async function getApi() {
   const settings = await getSystemSettings();
   const baseUrl = settings.dynmslApiBaseUrl || process.env.DYNMSL_API_BASE_URL || 'https://mail.dynmsl.com/api/public';
   const apiToken = settings.dynmslApiToken || process.env.DYNMSL_API_TOKEN;
+  const wafBypassToken = process.env.DYNMSL_WAF_BYPASS_TOKEN;
   if (!apiToken) {
     throw new Error('Missing DYNMSL_API_TOKEN');
   }
@@ -39,6 +40,7 @@ async function getApi() {
     headers: {
       Authorization: apiToken,
       'Content-Type': 'application/json',
+      ...(wafBypassToken ? { 'X-DYNMSL-WAF-BYPASS': wafBypassToken } : {}),
     },
   });
   return cachedApi;
