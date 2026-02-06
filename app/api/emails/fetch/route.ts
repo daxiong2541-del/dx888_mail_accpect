@@ -3,6 +3,8 @@ import dbConnect from '@/lib/db';
 import EmailConfig from '@/models/EmailConfig';
 import { getEmailList } from '@/lib/externalApi';
 
+export const preferredRegion = ['hkg1'];
+
 export async function POST(req: Request) {
   try {
     await dbConnect();

@@ -1,8 +1,20 @@
 import axios, { AxiosInstance } from 'axios';
 import { getSystemSettings } from '@/lib/systemSettings';
+import dns from 'node:dns';
+import http from 'node:http';
+import https from 'node:https';
 
 let cachedApi: AxiosInstance | null = null;
 let cachedKey: string | null = null;
+
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {
+  // ignore
+}
+
+const httpAgent = new http.Agent({ keepAlive: true });
+const httpsAgent = new https.Agent({ keepAlive: true });
 
 async function getApi() {
   const settings = await getSystemSettings();
@@ -17,6 +29,9 @@ async function getApi() {
   cachedKey = key;
   cachedApi = axios.create({
     baseURL: baseUrl,
+    timeout: 15_000,
+    httpAgent,
+    httpsAgent,
     headers: {
       Authorization: apiToken,
       'Content-Type': 'application/json',

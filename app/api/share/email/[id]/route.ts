@@ -3,6 +3,9 @@ import dbConnect from '@/lib/db';
 import EmailConfig from '@/models/EmailConfig';
 import { getEmailList } from '@/lib/externalApi';
 import mongoose from 'mongoose';
+import axios from 'axios';
+
+export const preferredRegion = ['hkg1'];
 
 function stripScripts(html: string) {
   return String(html || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -51,7 +54,21 @@ export async function GET(
             ? ((raw as { data: unknown[] }).data)
             : [];
         emails = list as Array<{ toEmail?: string; content?: string; createTime?: string; subject?: string }>;
-    } catch {
+    } catch (err: unknown) {
+        let detail = 'unknown';
+        if (axios.isAxiosError(err)) {
+          detail = [
+            err.code ? `code=${err.code}` : null,
+            typeof err.response?.status === 'number' ? `status=${err.response.status}` : null,
+            err.message ? `message=${err.message}` : null,
+          ]
+            .filter(Boolean)
+            .join(' ');
+        } else if (err instanceof Error) {
+          detail = err.message;
+        }
+
+        console.error('Error fetching emails', { configId: String(config._id), detail });
         return new NextResponse('Error fetching emails', { status: 502 });
     }
 

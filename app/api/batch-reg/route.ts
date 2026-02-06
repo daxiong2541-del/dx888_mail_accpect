@@ -6,6 +6,8 @@ import { isDynmslEmail } from '@/lib/auth';
 import EmailConfig from '@/models/EmailConfig';
 import { computeExpiresAt } from '@/lib/auth';
 
+export const preferredRegion = ['hkg1'];
+
 function generateRandomString(length: number, type: 'number' | 'english' | 'mixed') {
   let chars = '';
   if (type === 'number') chars = '0123456789';

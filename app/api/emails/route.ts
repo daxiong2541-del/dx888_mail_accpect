@@ -4,6 +4,8 @@ import EmailConfig from '@/models/EmailConfig';
 import { computeExpiresAt, getUserById, isDynmslEmail, parseEmails } from '@/lib/auth';
 import { addUsers } from '@/lib/externalApi';
 
+export const preferredRegion = ['hkg1'];
+
 function clampNumber(value: unknown, min: number, max: number, fallback: number) {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
