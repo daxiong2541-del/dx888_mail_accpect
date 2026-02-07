@@ -1,6 +1,13 @@
+import { headers } from 'next/headers';
+
 export const dynamic = 'force-dynamic';
 
-function getBaseUrl() {
+async function getBaseUrl() {
+  const h = await headers();
+  const proto = h.get('x-forwarded-proto') || 'http';
+  const host = h.get('x-forwarded-host') || h.get('host');
+  if (host) return `${proto}://${host}`;
+
   const vercelUrl = process.env.VERCEL_URL;
   if (vercelUrl) return `https://${vercelUrl}`;
   return 'http://localhost:3000';
@@ -12,7 +19,7 @@ export default async function ShareBatchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const res = await fetch(`${baseUrl}/api/share/batch/${id}`, { cache: 'no-store' });
 
   if (!res.ok) {
@@ -62,4 +69,3 @@ export default async function ShareBatchPage({
     </div>
   );
 }
-
